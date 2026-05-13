@@ -6,7 +6,7 @@ import {
   BRL, BRLshort,
   categories, spending, transactions, investments, patrimonyHistory,
   totalIncome, totalSpend, monthlyGoal, annualGoal, totalIncomeAnnual, totalSpendAnnual,
-  sources,
+  sources, months, monthlyFlow,
 } from '../data/appData';
 
 function TxnRow({ t, divider }) {
@@ -56,7 +56,7 @@ function GoalSheet({ goal, isYear, onSave, onClose }) {
       <div style={{
         position: 'absolute', bottom: 0, left: 0, right: 0,
         background: 'var(--surface-1)', borderRadius: '24px 24px 0 0',
-        padding: '12px 20px 40px', zIndex: 201,
+        padding: '12px 20px 0', zIndex: 201,
         boxShadow: '0 -4px 32px rgba(0,0,0,0.12)',
       }}>
         <div style={{ width: 36, height: 4, borderRadius: 2, background: 'var(--surface-3)', margin: '0 auto 20px' }}/>
@@ -85,7 +85,7 @@ function GoalSheet({ goal, isYear, onSave, onClose }) {
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: 10 }}>
+        <div className="sheet-safe" style={{ display: 'flex', gap: 10 }}>
           <button onClick={onClose} style={{ flex: 1, padding: 14, borderRadius: 14, background: 'var(--surface-2)', border: 'none', fontSize: 14, fontWeight: 600, color: 'var(--text-2)', cursor: 'pointer' }}>Cancelar</button>
           <button onClick={handleSave} style={{ flex: 2, padding: 14, borderRadius: 14, background: 'var(--text-1)', border: 'none', fontSize: 14, fontWeight: 650, color: 'var(--surface-1)', cursor: 'pointer' }}>Salvar meta</button>
         </div>
@@ -132,12 +132,7 @@ export function Dashboard({ onNavigate }) {
               </div>
             </>
           }
-          trailing={
-            <>
-              <HeaderIconBtn><Icons.search size={18}/></HeaderIconBtn>
-              <HeaderIconBtn><Icons.bell size={18}/></HeaderIconBtn>
-            </>
-          }
+          trailing={null}
         />
 
         {/* Hero card */}
@@ -214,17 +209,33 @@ export function Dashboard({ onNavigate }) {
         </div>
 
 
-        {/* Insight strip */}
+
+        {/* Monthly flow chart */}
         <div style={{ padding: '0 16px' }}>
-          <Card style={{ padding: '14px 16px', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-            <div style={{ width: 32, height: 32, borderRadius: 10, background: 'color-mix(in oklab, var(--amber) 18%, transparent)', color: 'var(--amber-strong)', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
-              <Icons.alert size={16}/>
+          <SectionTitle title="Quanto sobrou por mês"/>
+          <Card style={{ padding: '16px 16px 12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
+              <div>
+                <div style={{ fontSize: 11, color: 'var(--text-2)', textTransform: 'uppercase', letterSpacing: 0.6 }}>Melhor mês</div>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 15, fontWeight: 600, color: 'var(--accent-strong)', marginTop: 2 }}>
+                  {BRLshort(Math.max(...monthlyFlow))} · {months[monthlyFlow.indexOf(Math.max(...monthlyFlow))].m}
+                </div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: 11, color: 'var(--text-2)', textTransform: 'uppercase', letterSpacing: 0.6 }}>Média</div>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 15, fontWeight: 600, marginTop: 2 }}>
+                  {BRLshort(Math.round(monthlyFlow.reduce((s, v) => s + v, 0) / monthlyFlow.length))}
+                </div>
+              </div>
             </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13, fontWeight: 600 }}>Você já gastou 78% da renda</div>
-              <div style={{ fontSize: 12, color: 'var(--text-2)', marginTop: 2 }}>Alimentação está 13% acima do limite. Faltam 18 dias.</div>
+            <LineChart
+              values={monthlyFlow}
+              height={80}
+              labels={months.map((m) => m.m)}
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--text-3)', marginTop: 6, fontFamily: 'var(--font-mono)' }}>
+              <span>{months[0].m}</span><span>{months[months.length - 1].m}</span>
             </div>
-            <Icons.arrow_r size={16} style={{ color: 'var(--text-3)' }}/>
           </Card>
         </div>
 
@@ -241,7 +252,7 @@ export function Dashboard({ onNavigate }) {
                 size={120} thickness={18} sub="Maio" label={BRLshort(totalSpend)}
               />
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {spending.slice(0, 4).map((s, i) => {
+                {spending.slice(0, 5).map((s, i) => {
                   const c = categories.find((x) => x.id === s.cat);
                   const pct2 = Math.round(s.value / totalSpend * 100);
                   return (

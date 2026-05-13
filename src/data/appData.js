@@ -50,13 +50,21 @@ export const dailySpend = [
 ];
 
 export const months = [
-  { m: 'Jun', income: 8200, spend: 5640 },
-  { m: 'Jul', income: 8400, spend: 6210 },
-  { m: 'Ago', income: 7900, spend: 5780 },
-  { m: 'Set', income: 9100, spend: 6890 },
-  { m: 'Out', income: 8650, spend: 5980 },
-  { m: 'Nov', income: 9480, spend: 5438 },
+  { m: 'Jun', income: 8200,  spend: 5640 },
+  { m: 'Jul', income: 8400,  spend: 6210 },
+  { m: 'Ago', income: 7900,  spend: 5780 },
+  { m: 'Set', income: 9100,  spend: 6890 },
+  { m: 'Out', income: 8650,  spend: 5980 },
+  { m: 'Nov', income: 9480,  spend: 5438 },
+  { m: 'Dez', income: 10200, spend: 7640 },
+  { m: 'Jan', income: 8600,  spend: 5920 },
+  { m: 'Fev', income: 8100,  spend: 5480 },
+  { m: 'Mar', income: 9300,  spend: 6340 },
+  { m: 'Abr', income: 9800,  spend: 6450 },
+  { m: 'Mai', income: 10660, spend: 8160 },
 ];
+
+export const monthlyFlow = months.map((m) => m.income - m.spend);
 
 export const transactions = [
   { id: 't1',  type: 'expense', cat: 'alim',     desc: 'Restaurante Pomar',  amount: 86.40,   date: '2026-05-12', method: 'Crédito'  },
@@ -98,12 +106,71 @@ export const recurring = [
   { label: 'iCloud+',          cat: 'assin',   amount: 12.90, day: 22, next: '22/mai' },
 ];
 
+export const initialHousingBills = [
+  {
+    id: 'hb-1', type: 'aluguel', notes: '',
+    history: [
+      { month: '2025-06', amount: 1750 }, { month: '2025-07', amount: 1750 }, { month: '2025-08', amount: 1750 },
+      { month: '2025-09', amount: 1850 }, { month: '2025-10', amount: 1850 }, { month: '2025-11', amount: 1850 },
+      { month: '2025-12', amount: 1850 }, { month: '2026-01', amount: 1850 }, { month: '2026-02', amount: 1850 },
+      { month: '2026-03', amount: 1850 }, { month: '2026-04', amount: 1850 }, { month: '2026-05', amount: 1850 },
+    ],
+  },
+  {
+    id: 'hb-2', type: 'internet', notes: 'Fibra 400mb',
+    history: [
+      { month: '2025-06', amount: 99  }, { month: '2025-07', amount: 99  }, { month: '2025-08', amount: 99  },
+      { month: '2025-09', amount: 119 }, { month: '2025-10', amount: 119 }, { month: '2025-11', amount: 119 },
+      { month: '2025-12', amount: 119 }, { month: '2026-01', amount: 119 }, { month: '2026-02', amount: 119 },
+      { month: '2026-03', amount: 119 }, { month: '2026-04', amount: 119 }, { month: '2026-05', amount: 119 },
+    ],
+  },
+  {
+    id: 'hb-3', type: 'agua', notes: 'Sabesp',
+    history: [
+      { month: '2025-06', amount: 68  }, { month: '2025-07', amount: 74  }, { month: '2025-08', amount: 82  },
+      { month: '2025-09', amount: 71  }, { month: '2025-10', amount: 65  }, { month: '2025-11', amount: 69  },
+      { month: '2025-12', amount: 88  }, { month: '2026-01', amount: 75  }, { month: '2026-02', amount: 70  },
+      { month: '2026-03', amount: 78  }, { month: '2026-04', amount: 80  }, { month: '2026-05', amount: 95  },
+    ],
+  },
+  {
+    id: 'hb-4', type: 'luz', notes: 'Enel',
+    history: [
+      { month: '2025-06', amount: 98  }, { month: '2025-07', amount: 112 }, { month: '2025-08', amount: 124 },
+      { month: '2025-09', amount: 108 }, { month: '2025-10', amount: 96  }, { month: '2025-11', amount: 102 },
+      { month: '2025-12', amount: 134 }, { month: '2026-01', amount: 118 }, { month: '2026-02', amount: 105 },
+      { month: '2026-03', amount: 110 }, { month: '2026-04', amount: 115 }, { month: '2026-05', amount: 128 },
+    ],
+  },
+];
+
+export const initialSubscriptions = [
+  { id: 'sub-1', service: 'netflix',   label: '',       amount: 39.90, monthly: true,  day: 12, notes: 'Plano familiar' },
+  { id: 'sub-2', service: 'amazon',    label: '',       amount: 19.90, monthly: true,  day: 8,  notes: '' },
+  { id: 'sub-3', service: 'claude',    label: '',       amount: 99.00, monthly: true,  day: 1,  notes: 'Pro' },
+  { id: 'sub-4', service: 'totalpass', label: '',       amount: 99.90, monthly: true,  day: 5,  notes: '' },
+];
+
 export const insights = [
   { tone: 'warn', title: 'Alimentação acima do plano',       body: 'Você gastou R$ 1.240 — 13% acima do limite de R$ 1.100. Faltam 18 dias no mês.' },
   { tone: 'info', title: 'Maior fonte de renda: Empresa Verth', body: 'Representou 67% das suas entradas em maio.' },
   { tone: 'good', title: 'Economia de R$ 542 em transporte', body: 'Você gastou 23% menos que abril com Uber e combustível.' },
   { tone: 'warn', title: 'Assinatura raramente usada',        body: 'Detectamos que iCloud+ é cobrado, mas o uso caiu 80% em 60 dias.' },
 ];
+
+// Gastos mensais por categoria — Jun/25 a Mai/26 (12 meses, mesma ordem de `months`)
+export const categoryMonthly = {
+  alim:    [ 980, 1050, 1020, 1100, 1140,  980, 1200, 1080,  990, 1060, 1150, 1240],
+  trans:   [ 520,  580,  610,  590,  640,  560,  720,  640,  580,  620,  660,  640],
+  assin:   [ 272,  272,  272,  272,  272,  272,  312,  312,  312,  312,  312,  312],
+  lazer:   [ 320,  480,  290,  410,  520,  380,  640,  420,  350,  460,  510,  480],
+  saude:   [ 120,  180,   90,  240,  150,  200,  120,  160,  110,  180,  200,  190],
+  edu:     [ 200,  200,  200,  200,  220,  200,  200,  220,  200,  220,  220,  220],
+  compras: [ 280,  450,  380,  520,  290,  410,  680,  350,  290,  420,  380,  410],
+  moradia: [1750, 1750, 1750, 1850, 1850, 1850, 1850, 1850, 1850, 1850, 1850, 1850],
+  outros:  [  60,   80,  120,   90,   70,  110,  140,   80,   90,  100,   80,   96],
+};
 
 export const totalIncome = sources.reduce((s, x) => s + x.monthly, 0);
 export const totalSpend  = spending.reduce((s, x) => s + x.value, 0);

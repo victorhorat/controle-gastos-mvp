@@ -30,7 +30,7 @@ function EditSheet({ cat, currentLimit, onSave, onClose }) {
         position: 'absolute', bottom: 0, left: 0, right: 0,
         background: 'var(--surface-1)',
         borderRadius: '24px 24px 0 0',
-        padding: '12px 20px 40px',
+        padding: '12px 20px 0',
         zIndex: 201,
         boxShadow: '0 -4px 32px rgba(0,0,0,0.12)',
       }}>
@@ -70,7 +70,7 @@ function EditSheet({ cat, currentLimit, onSave, onClose }) {
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: 10 }}>
+        <div className="sheet-safe" style={{ display: 'flex', gap: 10 }}>
           <button onClick={onClose} style={{
             flex: 1, padding: 14, borderRadius: 14,
             background: 'var(--surface-2)', border: 'none',
@@ -87,7 +87,7 @@ function EditSheet({ cat, currentLimit, onSave, onClose }) {
   );
 }
 
-export function CategoryLimits({ onBack }) {
+export function CategoryLimits({ onBack, onNavigate }) {
   const [limits, setLimits] = useState(
     Object.fromEntries(initialSpending.map((s) => [s.cat, s.plan]))
   );
@@ -141,7 +141,14 @@ export function CategoryLimits({ onBack }) {
                   <div key={s.cat} style={{
                     padding: '14px 16px',
                     borderBottom: i < spending.length - 1 ? '1px solid var(--border)' : 'none',
-                  }}>
+                    cursor: 'pointer',
+                  }}
+                    onClick={() =>
+                      s.cat === 'assin'   ? onNavigate('subscriptions') :
+                      s.cat === 'moradia' ? onNavigate('housingBills') :
+                      onNavigate('transactions', { catFilter: s.cat })
+                    }
+                  >
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
                       <CategoryIcon cat={s.cat} size={34}/>
                       <div style={{ flex: 1, minWidth: 0 }}>
@@ -157,7 +164,7 @@ export function CategoryLimits({ onBack }) {
                           {BRL(s.value)}
                         </div>
                         <button
-                          onClick={() => setEditing(s.cat)}
+                          onClick={(e) => { e.stopPropagation(); setEditing(s.cat); }}
                           style={{
                             background: 'none', border: 'none', cursor: 'pointer', padding: 0,
                             fontFamily: 'var(--font-mono)', fontSize: 11,

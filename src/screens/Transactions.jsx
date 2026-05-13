@@ -1,32 +1,30 @@
 import { useState, useMemo, useRef } from 'react';
 import { Icons } from '../components/Icons';
 import { Card, CategoryIcon, ScreenHeader, HeaderIconBtn } from '../components/ui';
-import { BRL, BRLshort, categories, sources, transactions as initialTransactions } from '../data/appData';
+import { BRL, BRLshort, categories, sources } from '../data/appData';
+import { SERVICES } from './Subscriptions';
 
 const METHODS = ['PIX', 'Crédito', 'Débito', 'Transferência', 'Boleto', 'Dinheiro'];
 
-function EditSheet({ t, onSave, onClose }) {
+function EditSheet({ t, onSave, onClose, onGoToSubs, onGoToHousing }) {
   const [kind,   setKind]   = useState(t.type);
   const [amount, setAmount] = useState(String(t.amount).replace('.', ','));
   const [desc,   setDesc]   = useState(t.desc);
   const [cat,    setCat]    = useState(t.cat   ?? 'alim');
-  const [src,    setSrc]    = useState(t.src   ?? 'empresa');
+  const [src,    setSrc]    = useState(() => {
+    const found = sources.find((s) => s.id === t.src);
+    return found ? found.label : (t.src ?? '');
+  });
   const [date,   setDate]   = useState(t.date);
   const [method, setMethod] = useState(t.method);
 
   const handleSave = () => {
     const parsed = parseFloat(amount.replace(',', '.'));
     if (isNaN(parsed) || parsed <= 0 || !desc.trim()) return;
-    onSave({
-      ...t,
-      type:   kind,
-      amount: parsed,
-      desc:   desc.trim(),
-      cat:    kind === 'expense' ? cat : undefined,
-      src:    kind === 'income'  ? src : undefined,
-      date,
-      method,
-    });
+    onSave({ ...t, type: kind, amount: parsed, desc: desc.trim(),
+      cat: kind === 'expense' ? cat : undefined,
+      src: kind === 'income'  ? src : undefined,
+      date, method });
   };
 
   return (
@@ -35,7 +33,7 @@ function EditSheet({ t, onSave, onClose }) {
       <div style={{
         position: 'absolute', bottom: 0, left: 0, right: 0,
         background: 'var(--surface-1)', borderRadius: '24px 24px 0 0',
-        padding: '12px 20px 40px', zIndex: 201,
+        padding: '12px 20px 0', zIndex: 201,
         boxShadow: '0 -4px 32px rgba(0,0,0,0.14)',
         maxHeight: '92%', overflowY: 'auto',
       }}>
@@ -88,7 +86,7 @@ function EditSheet({ t, onSave, onClose }) {
               width: '100%', boxSizing: 'border-box',
               background: 'var(--surface-2)', border: '1.5px solid var(--border)',
               borderRadius: 14, padding: '14px 16px',
-              fontSize: 14, fontWeight: 500, color: 'var(--text-1)', outline: 'none',
+              fontWeight: 500, color: 'var(--text-1)', outline: 'none',
             }}
           />
         </div>
@@ -96,9 +94,31 @@ function EditSheet({ t, onSave, onClose }) {
         {/* Category / Source */}
         {kind === 'expense' ? (
           <div style={{ marginBottom: 14 }}>
-            <div style={{ fontSize: 11, color: 'var(--text-2)', letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 10 }}>Categoria</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 }}>
+              <div style={{ fontSize: 11, color: 'var(--text-2)', letterSpacing: 0.6, textTransform: 'uppercase' }}>Categoria</div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                {cat === 'moradia' && onGoToHousing && (
+                  <button onClick={onGoToHousing} style={{
+                    background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                    fontSize: 11, fontWeight: 600, color: 'var(--accent-strong)',
+                    display: 'flex', alignItems: 'center', gap: 4,
+                  }}>
+                    <Icons.calendar size={12}/> É recorrente?
+                  </button>
+                )}
+                {onGoToSubs && (
+                  <button onClick={onGoToSubs} style={{
+                    background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                    fontSize: 11, fontWeight: 600, color: 'var(--accent-strong)',
+                    display: 'flex', alignItems: 'center', gap: 4,
+                  }}>
+                    <Icons.receipt size={12}/> É uma assinatura?
+                  </button>
+                )}
+              </div>
+            </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
-              {categories.map((c) => (
+              {categories.filter((c) => c.id !== 'assin').map((c) => (
                 <button key={c.id} onClick={() => setCat(c.id)} style={{
                   background: 'transparent', border: 'none', padding: 0, cursor: 'pointer',
                   display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
@@ -117,26 +137,19 @@ function EditSheet({ t, onSave, onClose }) {
           </div>
         ) : (
           <div style={{ marginBottom: 14 }}>
-            <div style={{ fontSize: 11, color: 'var(--text-2)', letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 10 }}>Origem</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {sources.map((s) => (
-                <button key={s.id} onClick={() => setSrc(s.id)} style={{
-                  display: 'flex', alignItems: 'center', gap: 12,
-                  padding: '10px 12px', borderRadius: 12,
-                  border: '1px solid ' + (src === s.id ? 'var(--accent)' : 'var(--border)'),
-                  background: src === s.id ? 'color-mix(in oklab, var(--accent) 8%, var(--surface-1))' : 'var(--surface-1)',
-                  cursor: 'pointer', textAlign: 'left',
-                }}>
-                  <div style={{
-                    width: 28, height: 28, borderRadius: 10,
-                    background: 'var(--surface-2)', display: 'grid', placeItems: 'center',
-                    fontSize: 11, fontWeight: 700, flexShrink: 0,
-                  }}>{s.label[0]}</div>
-                  <div style={{ flex: 1, fontSize: 13, fontWeight: 600 }}>{s.label}</div>
-                  {src === s.id && <Icons.check size={16} style={{ color: 'var(--accent)' }}/>}
-                </button>
-              ))}
-            </div>
+            <div style={{ fontSize: 11, color: 'var(--text-2)', letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 8 }}>Origem</div>
+            <input
+              type="text"
+              value={src}
+              onChange={(e) => setSrc(e.target.value)}
+              placeholder="Ex: Salário, Freelance, Aluguel…"
+              style={{
+                width: '100%', boxSizing: 'border-box',
+                background: 'var(--surface-2)', border: '1.5px solid var(--border)',
+                borderRadius: 14, padding: '14px 16px',
+                fontWeight: 500, color: 'var(--text-1)', outline: 'none',
+              }}
+            />
           </div>
         )}
 
@@ -150,7 +163,7 @@ function EditSheet({ t, onSave, onClose }) {
               width: '100%', boxSizing: 'border-box',
               background: 'var(--surface-2)', border: '1.5px solid var(--border)',
               borderRadius: 14, padding: '14px 16px',
-              fontSize: 14, color: 'var(--text-1)', outline: 'none',
+              color: 'var(--text-1)', outline: 'none',
             }}
           />
         </div>
@@ -171,7 +184,7 @@ function EditSheet({ t, onSave, onClose }) {
         </div>
 
         {/* Buttons */}
-        <div style={{ display: 'flex', gap: 10 }}>
+        <div className="sheet-safe" style={{ display: 'flex', gap: 10 }}>
           <button onClick={onClose} style={{
             flex: 1, padding: 14, borderRadius: 14,
             background: 'var(--surface-2)', border: 'none',
@@ -184,6 +197,7 @@ function EditSheet({ t, onSave, onClose }) {
           }}>Salvar</button>
         </div>
       </div>
+
     </>
   );
 }
@@ -213,7 +227,7 @@ function PeriodSheet({ current, onSelect, onClose }) {
       <div style={{
         position: 'absolute', bottom: 0, left: 0, right: 0,
         background: 'var(--surface-1)', borderRadius: '24px 24px 0 0',
-        padding: '12px 20px 40px', zIndex: 201,
+        padding: '12px 20px 0', zIndex: 201,
         boxShadow: '0 -4px 32px rgba(0,0,0,0.12)',
       }}>
         <div style={{ width: 36, height: 4, borderRadius: 2, background: 'var(--surface-3)', margin: '0 auto 20px' }}/>
@@ -241,6 +255,7 @@ function PeriodSheet({ current, onSelect, onClose }) {
           fontSize: 15, fontWeight: 650, color: 'var(--surface-1)', cursor: 'pointer',
         }}>Aplicar filtro</button>
       </div>
+      <div className="sheet-safe"/>
     </>
   );
 }
@@ -254,7 +269,7 @@ function CatFilterSheet({ availableCats, current, onSelect, onClose }) {
       <div style={{
         position: 'absolute', bottom: 0, left: 0, right: 0,
         background: 'var(--surface-1)', borderRadius: '24px 24px 0 0',
-        padding: '12px 20px 40px', zIndex: 201,
+        padding: '12px 20px 0', zIndex: 201,
         boxShadow: '0 -4px 32px rgba(0,0,0,0.12)',
         maxHeight: '80%', overflowY: 'auto',
       }}>
@@ -304,14 +319,33 @@ function CatFilterSheet({ availableCats, current, onSelect, onClose }) {
           fontSize: 15, fontWeight: 650, color: 'var(--surface-1)', cursor: 'pointer',
         }}>Aplicar filtro</button>
       </div>
+      <div className="sheet-safe"/>
     </>
   );
 }
 
-function SwipeableRow({ t, divider, onEdit, onDelete }) {
+const SVC_MAP = Object.fromEntries(SERVICES.map((s) => [s.id, s]));
+
+function ServiceBadge({ serviceId, size = 36 }) {
+  const s = SVC_MAP[serviceId];
+  if (!s) return null;
+  const fs = s.abbr.length > 2 ? 9 : s.abbr.length > 1 ? 11 : 15;
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: size * 0.33, flexShrink: 0,
+      background: s.bg, color: s.fg,
+      display: 'grid', placeItems: 'center',
+      fontSize: fs, fontWeight: 800,
+    }}>{s.abbr}</div>
+  );
+}
+
+function SwipeableRow({ t, divider, onEdit, onDelete, subs }) {
   const isIncome = t.type === 'income';
   const cat = !isIncome && categories.find((c) => c.id === t.cat);
-  const src = isIncome && sources.find((s) => s.id === t.src);
+  const src = isIncome && (sources.find((s) => s.id === t.src) ?? { label: t.src });
+  const sub = !isIncome && t.subId && subs?.find((s) => s.id === t.subId);
+  const svc = sub && SVC_MAP[sub.service];
   const dateLabel = new Date(t.date + 'T12:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
 
   const [offset, setOffset] = useState(0);
@@ -407,7 +441,7 @@ function SwipeableRow({ t, divider, onEdit, onDelete }) {
           <div style={{ width: 36, height: 36, borderRadius: 12, background: 'color-mix(in oklab, var(--accent) 16%, transparent)', color: 'var(--accent-strong)', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
             <Icons.arrow_dn size={16} stroke={2}/>
           </div>
-        ) : <CategoryIcon cat={t.cat} size={36}/>}
+        ) : svc ? <ServiceBadge serviceId={sub.service} size={36}/> : <CategoryIcon cat={t.cat} size={36}/>}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 13, fontWeight: 550, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.desc}</div>
           <div style={{ fontSize: 11, color: 'var(--text-2)', marginTop: 2, display: 'flex', gap: 6 }}>
@@ -426,13 +460,13 @@ function SwipeableRow({ t, divider, onEdit, onDelete }) {
   );
 }
 
-export function Transactions({ onBack }) {
-  const [typeFilter, setTypeFilter] = useState('all');
-  const [catFilter,  setCatFilter]  = useState('all');
+export function Transactions({ onBack, initialCatFilter, initialMonthFilter, subs, txns, onTxnsChange, onNavigate }) {
+  const [typeFilter,   setTypeFilter]   = useState(initialCatFilter ? 'expense' : 'all');
+  const [catFilter,    setCatFilter]    = useState(initialCatFilter ?? 'all');
+  const [monthFilter,  setMonthFilter]  = useState(initialMonthFilter ?? null);
   const [periodId, setPeriodId] = useState('1');
   const [showPeriodSheet, setShowPeriodSheet] = useState(false);
   const [showCatSheet, setShowCatSheet] = useState(false);
-  const [txns, setTxns] = useState(initialTransactions);
   const [editingTxn, setEditingTxn] = useState(null);
 
   const periodMonths = PERIOD_OPTIONS.find((o) => o.id === periodId)?.months ?? 1;
@@ -446,7 +480,9 @@ export function Transactions({ onBack }) {
     return src?.label ?? catFilter;
   })();
 
-  const byPeriod   = useMemo(() => filterByPeriod(txns, periodMonths), [txns, periodMonths]);
+  const byPeriod   = useMemo(() => monthFilter
+    ? txns.filter((t) => t.date?.startsWith(monthFilter))
+    : filterByPeriod(txns, periodMonths), [txns, periodMonths, monthFilter]);
   const byType     = useMemo(() => byPeriod.filter((t) => typeFilter === 'all' || t.type === typeFilter), [byPeriod, typeFilter]);
   const filtered   = useMemo(() => byType.filter((t) => {
     if (catFilter === 'all') return true;
@@ -472,10 +508,10 @@ export function Transactions({ onBack }) {
     return Object.entries(m).sort((a, b) => b[0].localeCompare(a[0]));
   }, [filtered]);
 
-  const handleDelete = (id) => setTxns((prev) => prev.filter((t) => t.id !== id));
+  const handleDelete = (id) => onTxnsChange((prev) => prev.filter((t) => t.id !== id));
   const handleEdit   = (t) => setEditingTxn(t);
   const handleSaveEdit = (updated) => {
-    setTxns((prev) => prev.map((t) => t.id === updated.id ? updated : t));
+    onTxnsChange((prev) => prev.map((t) => t.id === updated.id ? updated : t));
     setEditingTxn(null);
   };
 
@@ -498,16 +534,29 @@ export function Transactions({ onBack }) {
 
           {/* Período e categoria */}
           <div style={{ padding: '0 20px', display: 'flex', gap: 8 }}>
-            <button onClick={() => setShowPeriodSheet(true)} style={{
-              display: 'inline-flex', alignItems: 'center', gap: 6,
-              padding: '5px 12px', borderRadius: 999,
-              background: 'var(--surface-2)', border: 'none', cursor: 'pointer',
-              fontSize: 12, fontWeight: 600, color: 'var(--text-2)',
-            }}>
-              <Icons.calendar size={13}/>
-              {periodLabel}
-              <Icons.arrow_dn size={12}/>
-            </button>
+            {monthFilter ? (
+              <button onClick={() => setMonthFilter(null)} style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                padding: '5px 12px', borderRadius: 999,
+                background: 'var(--text-1)', border: 'none', cursor: 'pointer',
+                fontSize: 12, fontWeight: 600, color: 'var(--surface-1)',
+              }}>
+                <Icons.calendar size={13}/>
+                {monthFilter}
+                <Icons.close size={11}/>
+              </button>
+            ) : (
+              <button onClick={() => setShowPeriodSheet(true)} style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                padding: '5px 12px', borderRadius: 999,
+                background: 'var(--surface-2)', border: 'none', cursor: 'pointer',
+                fontSize: 12, fontWeight: 600, color: 'var(--text-2)',
+              }}>
+                <Icons.calendar size={13}/>
+                {periodLabel}
+                <Icons.arrow_dn size={12}/>
+              </button>
+            )}
             <button onClick={() => setShowCatSheet(true)} style={{
               display: 'inline-flex', alignItems: 'center', gap: 6,
               padding: '5px 12px', borderRadius: 999,
@@ -584,6 +633,7 @@ export function Transactions({ onBack }) {
                         divider={i < items.length - 1}
                         onEdit={handleEdit}
                         onDelete={handleDelete}
+                        subs={subs}
                       />
                     ))}
                   </Card>
@@ -616,6 +666,8 @@ export function Transactions({ onBack }) {
           t={editingTxn}
           onSave={handleSaveEdit}
           onClose={() => setEditingTxn(null)}
+          onGoToSubs={onNavigate ? () => { setEditingTxn(null); onNavigate('subscriptions'); } : null}
+          onGoToHousing={onNavigate ? () => { setEditingTxn(null); onNavigate('housingBills'); } : null}
         />
       )}
     </>

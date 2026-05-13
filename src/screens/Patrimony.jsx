@@ -5,6 +5,7 @@ import { LineChart } from '../components/charts';
 import { BRL, BRLshort, investments as initialInvestments, patrimonyHistory } from '../data/appData';
 
 const kindHue = { Conta: 200, Caixinha: 175, CDB: 220, Poupança: 50, Tesouro: 280 };
+const CHART_LABELS = ['Jun/25','Jul/25','Ago/25','Set/25','Out/25','Nov/25','Dez/25','Jan/26','Fev/26','Mar/26','Abr/26','Mai/26'];
 const TODAY = new Date('2026-05-13');
 
 const BANKS = [
@@ -101,7 +102,7 @@ function AddSheet({ onSave, onClose }) {
       <div style={{
         position: 'absolute', bottom: 0, left: 0, right: 0,
         background: 'var(--surface-1)', borderRadius: '24px 24px 0 0',
-        padding: '12px 20px 40px', zIndex: 201,
+        padding: '12px 20px 0', zIndex: 201,
         boxShadow: '0 -4px 32px rgba(0,0,0,0.14)',
         maxHeight: '90%', overflowY: 'auto',
       }}>
@@ -203,7 +204,7 @@ function AddSheet({ onSave, onClose }) {
                   width: '100%', boxSizing: 'border-box',
                   background: 'var(--surface-2)', border: '1.5px solid var(--border)',
                   borderRadius: 14, padding: '14px 16px',
-                  fontSize: 14, color: 'var(--text-1)', outline: 'none',
+                  color: 'var(--text-1)', outline: 'none',
                 }}
               />
             </div>
@@ -244,7 +245,7 @@ function AddSheet({ onSave, onClose }) {
                     width: '100%', boxSizing: 'border-box',
                     background: 'var(--surface-2)', border: '1.5px solid var(--border)',
                     borderRadius: 14, padding: '14px 16px',
-                    fontSize: 14, color: maturity ? 'var(--text-1)' : 'var(--text-3)', outline: 'none',
+                    color: maturity ? 'var(--text-1)' : 'var(--text-3)', outline: 'none',
                   }}
                 />
               </div>
@@ -306,7 +307,7 @@ function AddSheet({ onSave, onClose }) {
                   width: '100%', boxSizing: 'border-box',
                   background: 'var(--surface-2)', border: '1.5px solid var(--border)',
                   borderRadius: 14, padding: '14px 16px',
-                  fontSize: 14, color: 'var(--text-1)', outline: 'none',
+                  color: 'var(--text-1)', outline: 'none',
                 }}
               />
             </div>
@@ -403,7 +404,7 @@ function GoalSheet({ goal, investments, onSave, onClose }) {
       <div style={{
         position: 'absolute', bottom: 0, left: 0, right: 0,
         background: 'var(--surface-1)', borderRadius: '24px 24px 0 0',
-        padding: '12px 20px 40px', zIndex: 201,
+        padding: '12px 20px 0', zIndex: 201,
         boxShadow: '0 -4px 32px rgba(0,0,0,0.14)',
         maxHeight: '92%', overflowY: 'auto',
       }}>
@@ -417,7 +418,7 @@ function GoalSheet({ goal, investments, onSave, onClose }) {
             autoFocus type="text"
             placeholder="Ex: Viagem Europa, Trocar de carro…"
             value={name} onChange={(e) => setName(e.target.value)}
-            style={{ width: '100%', boxSizing: 'border-box', background: 'var(--surface-2)', border: '1.5px solid var(--border)', borderRadius: 14, padding: '14px 16px', fontSize: 14, color: 'var(--text-1)', outline: 'none' }}
+            style={{ width: '100%', boxSizing: 'border-box', background: 'var(--surface-2)', border: '1.5px solid var(--border)', borderRadius: 14, padding: '14px 16px', color: 'var(--text-1)', outline: 'none' }}
           />
         </div>
 
@@ -505,7 +506,7 @@ function GoalSheet({ goal, investments, onSave, onClose }) {
           </div>
         )}
 
-        <div style={{ display: 'flex', gap: 10 }}>
+        <div className="sheet-safe" style={{ display: 'flex', gap: 10 }}>
           <button onClick={onClose} style={{ flex: 1, padding: 14, borderRadius: 14, background: 'var(--surface-2)', border: 'none', fontSize: 14, fontWeight: 600, color: 'var(--text-2)', cursor: 'pointer' }}>Cancelar</button>
           <button onClick={handleSave} style={{ flex: 2, padding: 14, borderRadius: 14, background: 'var(--text-1)', border: 'none', fontSize: 14, fontWeight: 650, color: 'var(--surface-1)', cursor: 'pointer' }}>{editing ? 'Salvar' : 'Criar meta'}</button>
         </div>
@@ -732,7 +733,7 @@ function EditInvSheet({ inv, onSave, onClose }) {
       <div style={{
         position: 'absolute', bottom: 0, left: 0, right: 0,
         background: 'var(--surface-1)', borderRadius: '24px 24px 0 0',
-        padding: '12px 20px 40px', zIndex: 201,
+        padding: '12px 20px 0', zIndex: 201,
         boxShadow: '0 -4px 32px rgba(0,0,0,0.14)',
         maxHeight: '90%', overflowY: 'auto',
       }}>
@@ -809,7 +810,7 @@ function EditInvSheet({ inv, onSave, onClose }) {
               <input autoFocus type="text" value={label} onChange={(e) => setLabel(e.target.value)} style={{
                 width: '100%', boxSizing: 'border-box',
                 background: 'var(--surface-2)', border: '1.5px solid var(--border)',
-                borderRadius: 14, padding: '14px 16px', fontSize: 14, color: 'var(--text-1)', outline: 'none',
+                borderRadius: 14, padding: '14px 16px', color: 'var(--text-1)', outline: 'none',
               }}/>
             </div>
 
@@ -889,11 +890,11 @@ function EditInvSheet({ inv, onSave, onClose }) {
               <input type="text" placeholder="Ex: Reserva de emergência, Viagem…" value={purpose} onChange={(e) => setPurpose(e.target.value)} style={{
                 width: '100%', boxSizing: 'border-box',
                 background: 'var(--surface-2)', border: '1.5px solid var(--border)',
-                borderRadius: 14, padding: '14px 16px', fontSize: 14, color: 'var(--text-1)', outline: 'none',
+                borderRadius: 14, padding: '14px 16px', color: 'var(--text-1)', outline: 'none',
               }}/>
             </div>
 
-            <div style={{ display: 'flex', gap: 10 }}>
+            <div className="sheet-safe" style={{ display: 'flex', gap: 10 }}>
               <button onClick={onClose} style={{ flex: 1, padding: 14, borderRadius: 14, background: 'var(--surface-2)', border: 'none', fontSize: 14, fontWeight: 600, color: 'var(--text-2)', cursor: 'pointer' }}>Cancelar</button>
               <button onClick={handleSave} style={{ flex: 2, padding: 14, borderRadius: 14, background: 'var(--text-1)', border: 'none', fontSize: 14, fontWeight: 650, color: 'var(--surface-1)', cursor: 'pointer' }}>Salvar</button>
             </div>
@@ -950,7 +951,7 @@ export function Patrimony({ onBack }) {
                 </div>
               </div>
               <div style={{ marginTop: 16, marginLeft: -4, marginRight: -4 }}>
-                <LineChart values={patrimonyHistory} height={70} accent="#fff"/>
+                <LineChart values={patrimonyHistory} height={70} accent="#fff" labels={CHART_LABELS}/>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, opacity: 0.6, marginTop: 4, fontFamily: 'var(--font-mono)' }}>
                 <span>Jun/25</span><span>Mai/26</span>

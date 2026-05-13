@@ -1,10 +1,117 @@
 import { useState } from 'react';
 import { Icons } from '../components/Icons';
-import { Card, Pill, SectionTitle, ScreenHeader, HeaderIconBtn } from '../components/ui';
+import { Card, Pill, CategoryIcon, SectionTitle, ScreenHeader, HeaderIconBtn } from '../components/ui';
 import { DonutChart, BarsChart, LineChart } from '../components/charts';
-import { BRL, BRLshort, categories, sources, spending, months, dailySpend, totalIncome, totalSpend, insights } from '../data/appData';
+import {
+  BRL, BRLshort,
+  categories, sources, spending, months, dailySpend,
+  totalIncome, totalSpend, categoryMonthly,
+} from '../data/appData';
 
-export function Reports({ onBack }) {
+const MONTH_LABELS = months.map((m) => m.m);
+const MONTH_KEYS   = ['2025-06','2025-07','2025-08','2025-09','2025-10','2025-11','2025-12','2026-01','2026-02','2026-03','2026-04','2026-05'];
+
+function CategoryEvolution({ onNavigate }) {
+  const [cat, setCat] = useState('alim');
+
+  const data    = categoryMonthly[cat] ?? [];
+  const current = data[data.length - 1] ?? 0;
+  const prev    = data[data.length - 2] ?? 0;
+  const avg     = Math.round(data.reduce((s, v) => s + v, 0) / data.length);
+  const maxVal  = Math.max(...data);
+  const maxIdx  = data.indexOf(maxVal);
+  const diff    = current - prev;
+  const catMeta = categories.find((c) => c.id === cat);
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {/* Category selector */}
+      <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 2 }}>
+        {categories.map((c) => (
+          <button key={c.id} onClick={() => setCat(c.id)} style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+            background: 'none', border: 'none', cursor: 'pointer', padding: '4px 2px',
+            flexShrink: 0,
+          }}>
+            <div style={{
+              padding: 3, borderRadius: 14,
+              background: cat === c.id ? 'var(--accent)' : 'transparent',
+              transition: 'background .15s',
+            }}>
+              <CategoryIcon cat={c.id} size={36}/>
+            </div>
+            <div style={{
+              fontSize: 9, fontWeight: cat === c.id ? 650 : 500,
+              color: cat === c.id ? 'var(--text-1)' : 'var(--text-2)',
+              whiteSpace: 'nowrap',
+            }}>{c.label}</div>
+          </button>
+        ))}
+      </div>
+
+      {/* Stats row */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+        {[
+          { label: 'Maio', value: BRL(current), sub: diff !== 0 ? (diff > 0 ? '▲ ' : '▼ ') + BRLshort(Math.abs(diff)) + ' vs abr' : '= igual a abr', subColor: diff > 0 ? 'var(--coral-strong)' : diff < 0 ? 'var(--accent-strong)' : 'var(--text-3)' },
+          { label: 'Média',  value: BRLshort(avg), sub: '12 meses', subColor: 'var(--text-3)' },
+          { label: 'Maior',  value: BRLshort(maxVal), sub: MONTH_LABELS[maxIdx], subColor: 'var(--text-3)' },
+        ].map((s, i) => (
+          <div key={i} style={{ background: 'var(--surface-2)', borderRadius: 12, padding: '10px 12px' }}>
+            <div style={{ fontSize: 10, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>{s.label}</div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 14, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{s.value}</div>
+            <div style={{ fontSize: 10, color: s.subColor, marginTop: 3, fontWeight: 600 }}>{s.sub}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Line chart */}
+      <div>
+        <LineChart
+          values={data}
+          height={100}
+          labels={MONTH_LABELS}
+          accent={`oklch(0.62 0.14 ${catMeta?.hue ?? 200})`}
+        />
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--text-3)', marginTop: 4, fontFamily: 'var(--font-mono)' }}>
+          <span>{MONTH_LABELS[0]}</span><span>{MONTH_LABELS[MONTH_LABELS.length - 1]}</span>
+        </div>
+      </div>
+
+      {/* Monthly list */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+        {data.map((v, i) => {
+          const barPct = maxVal > 0 ? v / maxVal * 100 : 0;
+          const isLast = i === data.length - 1;
+          const catColor = `oklch(0.62 0.14 ${catMeta?.hue ?? 200})`;
+          return (
+            <button key={i} onClick={() => onNavigate?.('transactions', { catFilter: cat, monthFilter: MONTH_KEYS[i] })} style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              padding: '8px 0', width: '100%',
+              background: 'none', border: 'none', cursor: 'pointer',
+              borderBottom: isLast ? 'none' : '1px solid var(--border)',
+              textAlign: 'left',
+            }}>
+              <div style={{ width: 28, fontSize: 11, color: 'var(--text-3)', fontFamily: 'var(--font-mono)', flexShrink: 0 }}>{MONTH_LABELS[i]}</div>
+              <div style={{ flex: 1, height: 6, background: 'var(--surface-2)', borderRadius: 999, overflow: 'hidden' }}>
+                <div style={{
+                  width: barPct + '%', height: '100%', borderRadius: 999,
+                  background: isLast ? catColor : `color-mix(in oklab, ${catColor} 50%, var(--surface-3))`,
+                  transition: 'width .3s',
+                }}/>
+              </div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: isLast ? 700 : 500, color: isLast ? 'var(--text-1)' : 'var(--text-2)', width: 72, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                {BRL(v)}
+              </div>
+              <Icons.arrow_dn size={10} style={{ transform: 'rotate(-90deg)', flexShrink: 0, color: 'var(--text-3)' }}/>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+export function Reports({ onBack, onNavigate }) {
   const [tab, setTab] = useState('categorias');
 
   return (
@@ -51,7 +158,10 @@ export function Reports({ onBack }) {
                   </div>
                   <Pill tone="good"><Icons.arrow_dn size={10} stroke={2.4}/> 9% melhor</Pill>
                 </div>
-                {tab === 'mensal' ? <BarsChart months={months} height={120}/> : <LineChart values={dailySpend} height={120}/>}
+                {tab === 'mensal'
+                  ? <BarsChart months={months} height={120}/>
+                  : <LineChart values={dailySpend} height={120} labels={dailySpend.map((_, i) => `${i + 1} mai`)}/>
+                }
                 {tab === 'mensal' && (
                   <div style={{ display: 'flex', gap: 16, marginTop: 12, fontSize: 11, color: 'var(--text-2)' }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -111,31 +221,12 @@ export function Reports({ onBack }) {
           </Card>
         </div>
 
-        {/* Insights */}
+        {/* Category evolution section */}
         <div style={{ padding: '0 16px' }}>
-          <SectionTitle title="Insights automáticos"/>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {insights.slice(0, 3).map((ins, i) => (
-              <Card key={i} style={{ padding: 14, display: 'flex', gap: 12 }}>
-                <div style={{
-                  width: 32, height: 32, borderRadius: 10, flexShrink: 0,
-                  background: ins.tone === 'warn' ? 'color-mix(in oklab, var(--amber) 18%, transparent)'
-                            : ins.tone === 'good' ? 'color-mix(in oklab, var(--accent) 18%, transparent)'
-                            : 'var(--surface-2)',
-                  color: ins.tone === 'warn' ? 'var(--amber-strong)'
-                       : ins.tone === 'good' ? 'var(--accent-strong)'
-                       : 'var(--text-2)',
-                  display: 'grid', placeItems: 'center',
-                }}>
-                  {ins.tone === 'warn' ? <Icons.alert size={16}/> : ins.tone === 'good' ? <Icons.spark size={16}/> : <Icons.chart size={16}/>}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600 }}>{ins.title}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-2)', marginTop: 2, lineHeight: 1.45 }}>{ins.body}</div>
-                </div>
-              </Card>
-            ))}
-          </div>
+          <SectionTitle title="Evolução por categoria"/>
+          <Card style={{ padding: 16 }}>
+            <CategoryEvolution onNavigate={onNavigate}/>
+          </Card>
         </div>
       </div>
     </div>
