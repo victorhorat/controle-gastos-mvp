@@ -1,0 +1,224 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;550;600;650;700&family=JetBrains+Mono:wght@400;500;600;650&display=swap');
+
+:root {
+  --font-ui: 'Manrope', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+
+  --bg:        #FAF8F4;
+  --surface-1: #FFFFFF;
+  --surface-2: #F1EDE6;
+  --surface-3: #E8E2D6;
+  --border:    #ECE6DA;
+  --text-1:    #14171B;
+  --text-2:    #6A6F77;
+  --text-3:    #98A0AA;
+
+  --accent:        oklch(0.58 0.13 175);
+  --accent-strong: oklch(0.42 0.13 175);
+  --amber:         oklch(0.74 0.14 65);
+  --amber-strong:  oklch(0.52 0.14 65);
+  --coral:         oklch(0.66 0.18 25);
+  --coral-strong:  oklch(0.48 0.18 25);
+
+  --tone-primary-bg: color-mix(in oklab, var(--accent) 16%, transparent);
+  --tone-primary-fg: var(--accent-strong);
+  --tone-coral-bg:   color-mix(in oklab, var(--coral) 16%, transparent);
+  --tone-coral-fg:   var(--coral-strong);
+  --tone-amber-bg:   color-mix(in oklab, var(--amber) 18%, transparent);
+  --tone-amber-fg:   var(--amber-strong);
+  --tone-neutral-bg: var(--surface-2);
+  --tone-neutral-fg: var(--text-1);
+
+  --nav-h: 72px;
+}
+
+[data-theme="dark"] {
+  --bg:        #0B0D10;
+  --surface-1: #14181D;
+  --surface-2: #1B2026;
+  --surface-3: #242A32;
+  --border:    #232830;
+  --text-1:    #ECEEF1;
+  --text-2:    #9BA3AD;
+  --text-3:    #6E7884;
+  --accent-strong: oklch(0.78 0.13 175);
+  --amber-strong:  oklch(0.78 0.14 65);
+  --coral-strong:  oklch(0.78 0.18 25);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font-ui);
+  background: var(--bg);
+  color: var(--text-1);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+#root {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  max-width: 430px;
+  margin: 0 auto;
+  background: var(--bg);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Screen container ─────────────────────────────────────── */
+.screen {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: calc(var(--nav-h) + 8px);
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  height: 100%;
+}
+.screen::-webkit-scrollbar { display: none; }
+
+/* ── Cards ────────────────────────────────────────────────── */
+.cg-card {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 1px 0 rgba(20,23,27,0.02);
+  overflow: hidden;
+}
+[data-theme="dark"] .cg-card { box-shadow: none; }
+
+.cg-hero {
+  background: linear-gradient(155deg,
+    color-mix(in oklab, var(--accent) 92%, white),
+    color-mix(in oklab, var(--accent) 75%, black));
+  color: #fff;
+  padding: 20px;
+  border-radius: 24px;
+  border: none;
+  box-shadow:
+    0 10px 28px color-mix(in oklab, var(--accent) 22%, transparent),
+    0 1px 2px rgba(0,0,0,0.05);
+  position: relative;
+  overflow: hidden;
+}
+.cg-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 90% 10%, rgba(255,255,255,0.18), transparent 55%);
+  pointer-events: none;
+}
+
+/* ── Quick actions ────────────────────────────────────────── */
+.cg-quick {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px 6px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-1);
+  font-family: var(--font-ui);
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .12s;
+}
+.cg-quick:active { transform: scale(0.94); }
+.cg-quick-icon {
+  width: 36px; height: 36px; border-radius: 12px;
+  background: var(--tone-bg, var(--surface-2));
+  color: var(--tone-fg, var(--text-1));
+  display: grid; place-items: center;
+}
+
+/* ── Primary button ───────────────────────────────────────── */
+.cg-primary-btn {
+  width: 100%;
+  padding: 16px;
+  background: var(--text-1);
+  color: var(--surface-1);
+  border: none;
+  border-radius: 16px;
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -0.2px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .12s, opacity .12s;
+}
+.cg-primary-btn:active { transform: scale(0.98); opacity: 0.9; }
+
+/* ── Bottom nav ───────────────────────────────────────────── */
+.bottom-nav {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--nav-h);
+  background: color-mix(in oklab, var(--surface-1) 92%, transparent);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  padding-top: 10px;
+  z-index: 100;
+}
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: var(--text-3);
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  transition: color .15s;
+}
+.nav-item.active { color: var(--accent-strong); }
+.nav-item-add {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-3);
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.nav-add-btn {
+  width: 46px;
+  height: 32px;
+  border-radius: 14px;
+  background: var(--accent);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 4px 12px color-mix(in oklab, var(--accent) 40%, transparent);
+  transition: transform .12s;
+}
+.nav-item-add:active .nav-add-btn { transform: scale(0.92); }
+
+button { font-family: var(--font-ui); }
